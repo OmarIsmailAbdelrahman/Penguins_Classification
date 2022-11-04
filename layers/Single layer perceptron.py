@@ -28,7 +28,17 @@ def fun(x):
     else:
         return 1
 
-
+def fun2(x,t):
+    if t == 2:
+        if x <= 1:
+            return -1
+        else:
+            return 1
+    else:
+        if x < 1:
+            return -1
+        else:
+            return 1
 class SingleLayer:
     def __init__(self, alpha=0.01,max_iter=1000,reg_constant = 0.001,bias= True):
         self.alpha = alpha
@@ -54,8 +64,6 @@ class SingleLayer:
         return  1 - np.abs(x/y.shape[0])
     def train(self,X,y):
         # initialization of weights
-        y = y-1
-        print(y.reshape(1,-1))
         if self.bias:
             X = np.hstack((np.ones([X.shape[0], 1]), X))
             num = 3
@@ -74,6 +82,7 @@ class SingleLayer:
             if(self.differnce(A,y) > 0.95):
                 print(i)
                 break
+        print(self.W)
 
 df = pd.read_csv('penguins.csv', index_col=False,encoding="utf-8")
 df.reset_index(drop=True, inplace=True)
@@ -101,10 +110,12 @@ bias = True
 #     X = np.random.rand(n,3)
 # else:
 #     X = np.random.rand(n, 2)
-y = np.random.rand(n)
+y = np.array(df["species"]).reshape(-1,1)[50:150]
 model = SingleLayer(bias=bias,max_iter = 1000,alpha =0.01)
 X = feature_scaling(df[["bill_length_mm","bill_depth_mm"]])[:100]
-# if 1 and 2 class make it 0 and 1 or something
-model.train(X,np.array(df["species"]).reshape(-1,1)[:100],)
+print(y.shape)
+y = np.apply_along_axis(fun2, 1, y,y.max()).reshape(-1,1)
+
+model.train(X,y,)
 
 
