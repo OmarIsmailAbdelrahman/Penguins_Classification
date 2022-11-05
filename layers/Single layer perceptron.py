@@ -80,9 +80,9 @@ class SingleLayer:
             error = self.dloss(A,y)
             self.W = self.W - self.alpha * np.dot(X.T,error) / X.shape[0]
             if(self.differnce(A,y) > 0.95):
-                print(i)
+                print("number of iterations : ",i)
                 break
-        print(self.W)
+        print("Weights parameters : ", self.W.reshape(1,-1))
     def test(self,X,y):
         if self.bias:
             X = np.hstack((np.ones([X.shape[0], 1]), X))
@@ -90,7 +90,8 @@ class SingleLayer:
             X = np.array(X)
         Z = np.dot(X, self.W)
         A = self.threshold(Z)
-        print("model score",self.differnce(A,y))
+        #print("testing", A.reshape(1,-1),"\n testing",y.reshape(1,-1))
+        print("model test score",self.differnce(A,y))
 
 df = pd.read_csv('penguins.csv', index_col=False,encoding="utf-8")
 df.reset_index(drop=True, inplace=True)
@@ -113,7 +114,7 @@ plt.scatter(df.bill_length_mm, df.flipper_length_mm, c=df.gender)
 
 
 n = 100
-bias = True
+bias = False
 # if bias:
 #     X = np.random.rand(n,3)
 # else:
@@ -121,10 +122,9 @@ bias = True
 y = np.array(df["species"]).reshape(-1,1)[50:150]
 model = SingleLayer(bias=bias,max_iter = 1000,alpha =0.01)
 X = feature_scaling(df[["bill_length_mm","bill_depth_mm"]])[:100]
-print(y.shape)
 y = np.apply_along_axis(fun2, 1, y,y.max()).reshape(-1,1)
-X_train,X_test,y_train,y_test = train_test_split(X,y)
+X_train, X_test, y_train, y_test = train_test_split(X,y,random_state = 42, shuffle = True,test_size = 0.2)
 
-model.train(X,y,)
-model.test(X,y)
+model.train(X_train,y_train,)
+model.test(X_test,y_test)
 
