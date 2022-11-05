@@ -57,11 +57,11 @@ class SingleLayer:
     def predict(self,X):
         return np.dot(X,self.W)
     def differnce(self,y,y_hat):
-        x = 0
+        fail = 0
         for i in range(y.shape[0]):
             if y[i] != y_hat[i]:
-                x+=1
-        return  1 - np.abs(x/y.shape[0])
+                fail+=1
+        return  1 - np.abs(fail/y.shape[0])
     def train(self,X,y):
         # initialization of weights
         if self.bias:
@@ -83,6 +83,14 @@ class SingleLayer:
                 print(i)
                 break
         print(self.W)
+    def test(self,X,y):
+        if self.bias:
+            X = np.hstack((np.ones([X.shape[0], 1]), X))
+        else:
+            X = np.array(X)
+        Z = np.dot(X, self.W)
+        A = self.threshold(Z)
+        print("model score",self.differnce(A,y))
 
 df = pd.read_csv('penguins.csv', index_col=False,encoding="utf-8")
 df.reset_index(drop=True, inplace=True)
@@ -115,7 +123,8 @@ model = SingleLayer(bias=bias,max_iter = 1000,alpha =0.01)
 X = feature_scaling(df[["bill_length_mm","bill_depth_mm"]])[:100]
 print(y.shape)
 y = np.apply_along_axis(fun2, 1, y,y.max()).reshape(-1,1)
+X_train,X_test,y_train,y_test = train_test_split(X,y)
 
 model.train(X,y,)
-
+model.test(X,y)
 
