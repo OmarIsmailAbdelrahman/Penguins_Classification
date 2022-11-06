@@ -10,7 +10,6 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn import preprocessing
 
-
 np.set_printoptions(threshold=sys.maxsize)
 pd.set_option('display.max_columns', None)
 pd.set_option('display.max_rows', None)
@@ -82,6 +81,7 @@ class SingleLayer:
             if(self.differnce(A,y) > 0.95):
                 print("number of iterations : ",i)
                 break
+        print("train score", self.differnce(self.threshold(np.dot(X, self.W)),y))
         print("Weights parameters : ", self.W.reshape(1,-1))
     def test(self,X,y):
         if self.bias:
@@ -103,18 +103,17 @@ df["gender"] = df.apply(le.fit_transform)["gender"]
 df["species"] = df.apply(le.fit_transform)["species"]
 
 
-plt.scatter(df.bill_length_mm, df.bill_depth_mm, c=df.gender)
-# plt.show()
+# plt.scatter(df.bill_length_mm, df.bill_depth_mm, c=df.gender)
+# # plt.show()
+#
+# plt.scatter(df.flipper_length_mm, df.bill_depth_mm, c=df.gender)
+# # plt.show()
+#
+# plt.scatter(df.bill_length_mm, df.flipper_length_mm, c=df.gender)
+# # plt.show()
 
-plt.scatter(df.flipper_length_mm, df.bill_depth_mm, c=df.gender)
-# plt.show()
 
-plt.scatter(df.bill_length_mm, df.flipper_length_mm, c=df.gender)
-# plt.show()
-
-
-n = 100
-bias = False
+bias = True
 # if bias:
 #     X = np.random.rand(n,3)
 # else:
@@ -124,7 +123,4 @@ model = SingleLayer(bias=bias,max_iter = 1000,alpha =0.01)
 X = feature_scaling(df[["bill_length_mm","bill_depth_mm"]])[:100]
 y = np.apply_along_axis(fun2, 1, y,y.max()).reshape(-1,1)
 X_train, X_test, y_train, y_test = train_test_split(X,y,random_state = 42, shuffle = True,test_size = 0.2)
-
-model.train(X_train,y_train,)
-model.test(X_test,y_test)
 
