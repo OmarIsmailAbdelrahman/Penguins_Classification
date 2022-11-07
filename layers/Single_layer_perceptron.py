@@ -38,6 +38,32 @@ def fun2(x,t):
             return -1
         else:
             return 1
+
+def confusion_matrix(actual, predicted):
+    act = actual.flatten()
+    unique = set(actual.flatten())
+    pred = predicted.flatten()
+    matrix = [list() for x in range(len(unique))]
+    for i in range(len(unique)):
+        matrix[i] = [0 for x in range(len(unique))]
+    lookup = dict()
+    for i, value in enumerate(unique):
+        lookup[value] = i
+    for i in range(len(act)):
+        x = lookup[act[i]]
+        y = lookup[pred[i]]
+        matrix[y][x] += 1
+    return unique, matrix
+
+
+# pretty print a confusion matrix
+def print_confusion_matrix(unique, matrix):
+    print('(A)' + ' '.join(str(x) for x in unique))
+    print('(P)---')
+    for i, x in enumerate(unique):
+        print("%s| %s" % (x, ' '.join(str(x) for x in matrix[i])))
+
+
 class SingleLayer:
     def __init__(self, alpha=0.01,max_iter=1000,reg_constant = 0.001,bias= True):
         self.alpha = alpha
@@ -92,6 +118,9 @@ class SingleLayer:
         A = self.threshold(Z)
         #print("testing", A.reshape(1,-1),"\n testing",y.reshape(1,-1))
         print("model test score",self.differnce(A,y))
+        unique, matrix = confusion_matrix(A,y)
+        print_confusion_matrix(unique, matrix)
+
 
 df = pd.read_csv('penguins.csv', index_col=False,encoding="utf-8")
 df.reset_index(drop=True, inplace=True)
