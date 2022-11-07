@@ -38,7 +38,7 @@ def fun2(x,t):
             return -1
         else:
             return 1
-
+# confusion matrix
 def confusion_matrix(actual, predicted):
     act = actual.flatten()
     unique = set(actual.flatten())
