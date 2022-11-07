@@ -30,7 +30,7 @@ def colors(y):
         else:
             t.append("black")
     return t
-def plot_it(x1,x2,y1,W):
+def plot_it(x1,x2,y1,W,features_name):
     # Plot
     # y1 = np.apply_along_axis(colors, 1, y1)
     yy = np.array(colors(y1))
@@ -50,6 +50,6 @@ def plot_it(x1,x2,y1,W):
 
     # Decorate
     plt.title('Color Change')
-    plt.xlabel('X1 - value')
-    plt.ylabel('X2 - value')
+    plt.xlabel(features_name[1])
+    plt.ylabel(features_name[0])
     plt.show()

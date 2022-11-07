@@ -73,7 +73,7 @@ def GetData():
     print("bias",Bias)
 
     # plot the 3 classes and features
-    plt.scatter(df[feature_1],df[feature_2],c=df.species)
+    plt.scatter(df[feature_1],df[feature_2],c=np.array(df["species"]),label = "Data Graph")
     plt.show()
     # model inilization
     model = Single_layer_perceptron.SingleLayer(bias=Bias,max_iter = Epochs,alpha =alpha)
@@ -86,7 +86,7 @@ def GetData():
 
     model.train(X_train,y_train)
     model.test(X_test,y_test)
-    processingdata.plot_it(X[:,0],X[:,1],np.array(y),W=model.W)
+    processingdata.plot_it(X[:,0],X[:,1],np.array(y),model.W,featurex)
 
 
 
