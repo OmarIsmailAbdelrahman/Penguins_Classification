@@ -12,9 +12,10 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn import preprocessing
 import processingdata
+
 # Global variables
 
-df = pd.read_csv('penguins.csv', index_col=False,encoding="utf-8")
+df = pd.read_csv('penguins.csv', index_col=False, encoding="utf-8")
 df.reset_index(drop=True, inplace=True)
 df['gender'] = df['gender'].fillna('male')
 
@@ -22,7 +23,6 @@ df['gender'] = df['gender'].fillna('male')
 le = LabelEncoder()
 df["gender"] = df.apply(le.fit_transform)["gender"]
 df["species"] = df.apply(le.fit_transform)["species"]
-
 
 base = Tk()
 
@@ -45,57 +45,59 @@ def penclass(c):
     else:
         return 1
 
+
 def GetData():
-    feature_1=feature1.get()
-    feature_2=feature2.get()
-    print("feature",[feature_1,feature_2])
+    feature_1 = feature1.get()
+    feature_2 = feature2.get()
+    print("feature", [feature_1, feature_2])
     # for no duplicated col
     if feature_1 == feature_2:
         featurex = feature_1
     else:
-        featurex = [feature_1,feature_2]
+        featurex = [feature_1, feature_2]
 
-    print(featurex)
-    class_1=class1.get()
-    class_2=class2.get()
-    print("class ",[class_1,class_2])
-    classx = [penclass(class_1),penclass(class_2)]
+    # print(featurex)
+    class_1 = class1.get()
+    class_2 = class2.get()
+    # print("class ", [class_1, class_2])
+    classx = [penclass(class_1), penclass(class_2)]
 
-    learning_str=learningRate.get()
-    alpha=learningRate.getdouble(learning_str)
-    print("alpha ",alpha)
+    learning_str = learningRate.get()
+    alpha = learningRate.getdouble(learning_str)
+    # print("alpha ", alpha)
 
-    ebochs_str=num_of_ebochs.get()
+    ebochs_str = num_of_ebochs.get()
     Epochs = int(num_of_ebochs.getdouble(ebochs_str))
-    print("itr",int(Epochs))
+    # print("itr", int(Epochs))
 
-    Bias=bias.get()
-    print("bias",Bias)
+    Bias = bias.get()
+    # print("bias", Bias)
+    MSE = threshhold.get()
+    # print("MSE", MSE)
 
     # plot the 3 classes and features
-    plt.scatter(df[feature_1],df[feature_2],c=np.array(df["species"]),label = "Data Graph")
+    plt.scatter(df[feature_1], df[feature_2], c=np.array(df["species"]), label="Data Graph")
     plt.show()
     # model inilization
-    model = Single_layer_perceptron.SingleLayer(bias=Bias,max_iter = Epochs,alpha =alpha)
+    model = Single_layer_perceptron.SingleLayer(gradient=MSE, bias=Bias, max_iter=Epochs, alpha=alpha, threshhold=MSE)
     # selected classes and features with preprocessing
     df_new = df[df["species"].isin(classx)]
     X = processingdata.feature_scaling(df_new[featurex])
-    y = np.array(df_new["species"]).reshape(-1,1)
-    print(X.shape,y.shape)
-    X_train, X_test, y_train, y_test = train_test_split(X,  np.apply_along_axis(Single_layer_perceptron.fun2, 1, y, y.max()).reshape(-1, 1), random_state=42, shuffle=True, test_size=0.2)
+    y = np.array(df_new["species"]).reshape(-1, 1)
+    # print(X.shape, y.shape)
+    X_train, X_test, y_train, y_test = train_test_split(X, np.apply_along_axis(Single_layer_perceptron.fun2, 1, y,
+                                                                               y.max()).reshape(-1, 1), shuffle=True,
+                                                        test_size=0.2)
 
-    model.train(X_train,y_train)
-    model.test(X_test,y_test)
-    processingdata.plot_it(X[:,0],X[:,1],np.array(y),model.W,featurex)
-
+    model.train(X_train, y_train)
+    model.test(X_test, y_test)
+    processingdata.plot_it(X[:, 0], X[:, 1], np.array(y), model.W, featurex)
 
 
 # ------------------------------------------------------------------------------------------------------#
 # Using 'Label0' widget to create class label and using place() method, set its position.
 lbl_0 = Label(base, text="Select first class", width=20, font=("bold", 11))
 lbl_0.place(x=60, y=45)
-
-
 
 # the variable 'cv' is introduced to store the String Value, which by default is (empty) ""
 class1 = StringVar()
@@ -109,7 +111,7 @@ lbl_1 = Label(base, text="Select second feature", width=20, font=("bold", 11))
 lbl_1.place(x=60, y=95)
 
 # the variable 'cv' is introduced to store the String Value, which by default is (empty) ""
-class2= StringVar()
+class2 = StringVar()
 drplist = OptionMenu(base, class2, *list_of_classes)
 drplist.config(width=15)
 class2.set(list_of_classes[0])
@@ -170,13 +172,24 @@ bias = IntVar()
 # Using the Checkbutton widget to create a button and using place() method to set its position.
 Checkbutton(base, text="", variable=bias).place(x=235, y=372)
 
+# ------------------------------------------------------------------------------------------------------------#
+
+# Using 'Label6' widget to create Bias label and using place() method, set its position.
+lbl_7 = Label(base, text="threshhold", width=20, font=('bold', 10))
+lbl_7.place(x=120, y=400)
+
+# the new variable 'vars1' is created to store Integer Value, which by default is 0.
+threshhold = IntVar()
+# Using the Checkbutton widget to create a button and using place() method to set its position.
+Checkbutton(base, text="", variable=threshhold).place(x=235, y=400)
+
 # ----------------------------------------------------------------------------------------------------------#
 
 # Using the Button widget, we get to create a button for submitting all the data that has been entered in the entry boxes of the form by the user.
-#button=Button(base, text='Submit', width=20, bg="grey", fg='white',command).place(x=160, y=420)
-b=Button(base, text='Submit',width=20,bg='brown',fg='white',command=GetData)
-b.place(x=180,y=380)
-b.pack()
+# button=Button(base, text='Submit', width=20, bg="grey", fg='white',command).place(x=160, y=420)
+b = Button(base, text='Submit', width=20, bg='brown', fg='white', command=GetData)
+b.place(x=180, y=430)
+# b.pack()
 
 # b2=Button(base, text='Submit',width=20,bg='brown',fg='white',command=plot_it)
 # b.place(x=180,y=380)
