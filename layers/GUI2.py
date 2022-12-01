@@ -75,6 +75,9 @@ def GetData():
     MSE = threshhold.get()
     # print("MSE", MSE)
 
+    stop = stoppingValue.get()
+    stopValue = stoppingValue.getdouble(stop)
+
     # plot the 3 classes and features
     plt.scatter(df[feature_1], df[feature_2], c=np.array(df["species"]), label="Data Graph")
     plt.show()
@@ -89,7 +92,7 @@ def GetData():
                                                                                y.max()).reshape(-1, 1), shuffle=True,
                                                         test_size=0.2)
 
-    model.train(X_train, y_train)
+    model.train(X_train, y_train,stopValue)
     model.test(X_test, y_test)
     processingdata.plot_it(X[:, 0], X[:, 1], np.array(y), model.W, featurex)
 
@@ -145,21 +148,21 @@ drplist.place(x=240, y=215)
 
 # Using 'Label4' widget to create learning rate label and using place() method to set its position.
 lbl_4 = Label(base, text="Enter learning rate", width=20, font=("bold", 11))
-lbl_4.place(x=60, y=290)
+lbl_4.place(x=60, y=270)
 
 # Using Enrty widget to make a text entry box for accepting the input string in text from user.
 learningRate = Entry(base)
-learningRate.place(x=240, y=290)
+learningRate.place(x=240, y=270)
 
 # -------------------------------------------------------------------------------------------------------------#
 
 # Using 'Label5' widget to create Num of ebochs label and using place() method to set its position.
 lbl_5 = Label(base, text="Number of ebochs", width=20, font=("bold", 11))
-lbl_5.place(x=60, y=330)
+lbl_5.place(x=60, y=310)
 
 # Using Enrty widget to make a text entry box for accepting the input string in text from user.
 num_of_ebochs = Entry(base)
-num_of_ebochs.place(x=240, y=330)
+num_of_ebochs.place(x=240, y=310)
 
 # ------------------------------------------------------------------------------------------------------------#
 
@@ -175,13 +178,28 @@ Checkbutton(base, text="", variable=bias).place(x=235, y=372)
 # ------------------------------------------------------------------------------------------------------------#
 
 # Using 'Label6' widget to create Bias label and using place() method, set its position.
-lbl_7 = Label(base, text="threshhold", width=20, font=('bold', 10))
+lbl_7 = Label(base, text="MSE", width=20, font=('bold', 10))
 lbl_7.place(x=120, y=400)
 
 # the new variable 'vars1' is created to store Integer Value, which by default is 0.
 threshhold = IntVar()
 # Using the Checkbutton widget to create a button and using place() method to set its position.
 Checkbutton(base, text="", variable=threshhold).place(x=235, y=400)
+
+# -------------------------------------------------------------------------------------------------------------#
+
+
+# Using 'Label4' widget to create learning rate label and using place() method to set its position.
+lbl_8 = Label(base, text="Enter stopping criteria ", width=20, font=("bold", 11))
+lbl_8.place(x=60, y=350)
+
+# Using Enrty widget to make a text entry box for accepting the input string in text from user.
+stoppingValue = Entry(base)
+stoppingValue.place(x=240, y=350)
+
+#
+
+
 
 # ----------------------------------------------------------------------------------------------------------#
 

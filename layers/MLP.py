@@ -11,9 +11,7 @@ pd.set_option('display.max_rows', None)
 
 
 class NN:
-
-    def __init__(self, learning_rate=0.001, max_iter=1000, reg_constant=0.001, bias=0,
-                 threshold="Sigmoid"):
+    def __init__(self, learning_rate=0.001, max_iter=1000, reg_constant=0.001, bias=0,threshold="Sigmoid"):
         self.max_iter = max_iter
         # self.hidden_layers = hidden_layers
         # self.output_layer = output_layer
@@ -68,6 +66,8 @@ class NN:
         # print(X.shape, net[0].shape, )
         # print(input[0].shape, input[1].shape)
         print("input sizes: ",0,input[0].shape) # the addition 1 in the col is because of bias
+        print("layer 1")
+        print("net sizes: ", 1, net[0].shape)
         print("input sizes: ",1,input[1].shape)
         for i in range(len(self.W) - 1):
             if self.bias == 1:
@@ -76,20 +76,43 @@ class NN:
                 tmp = input[len(input) - 1]
             net.append(np.dot(tmp,self.W[i+1]))
             input.append(self.fThreshold(net[len(net)-1]))
+            print("layer",(i+2))
+            print("net sizes: ",(i+2),net[-1].shape)
             print("input sizes: ",(i+2),input[-1].shape)
+
         self.input = input
         self.net = net
 
     def backward(self, X, y):
-        return
+        # print(self.input[len(self.input)-1])
+        dcost = (self.input[len(self.input)-1] - y) * 2
+        # print(dcost)
+        for i in range(len(self.W)):
+            if i == 0:
+                db = self.dthreshold(self.net[-1]) * dcost
+                dw = np.dot(self.input[-1].T, db)
+            else:
+                return
 
     def train(self, X, y, ):
         for i in range(1):
             self.forward(X, y)
-            # self.backward(X,y)
+            y = self.splitOutputToNeural(y)
+            self.backward(X,y)
 
     def predict(self, X):
         return
+    def splitOutputToNeural(self,y):
+        unique = np. unique(y)
+        split = []
+        y = np.array(y)
+        for i in range(y.shape[0]):
+            tmp = np.zeros(unique.shape)
+            tmp[y[i]] = 1
+            split.append(tmp)
+        # for i in range(y.shape[0]):
+        #     print(y[i] , split[i])
+        return split
 
 
 # species,bill_length_mm,bill_depth_mm,flipper_length_mm,gender,body_mass_g
@@ -112,6 +135,6 @@ X = df_new
 
 X_train, X_test, y_train, y_test = train_test_split(X , y, test_size=0.2)
 
-model = NN( learning_rate=1, max_iter=1000, bias=0, reg_constant=0.01,threshold="Sigmoid")
-model.layers(inputSize=X_train.shape[1], numOfLayers=6, layerSizes=[3, 4,10,15,2,1], numOfOutput=3)
+model = NN( learning_rate=1, max_iter=1000, bias=1, reg_constant=0.01,threshold="Sigmoid")
+model.layers(inputSize=X_train.shape[1], numOfLayers=2, layerSizes=[3, 4], numOfOutput=3)
 model.train(X_train, y_train)

@@ -109,10 +109,9 @@ class SingleLayer:
             for i in range(y.shape[0]):
                 res += np.power((y[i] - y_hat[i]),2)
             res = res * 0.5 / y.shape
-            # print("sad " ,res.shape)
             return res
 
-    def train(self, X, y):
+    def train(self, X, y,stopValue):
 
         # initialization of weights
         if self.bias:
@@ -133,33 +132,35 @@ class SingleLayer:
                 for j in range(y.shape[0]):
                     Z = np.dot(X[j], self.W)
                     A = self.threshold(np.array(Z).reshape(1, 1))
-                    error = self.dloss(A, y)
-                    print("gradient ", self.alpha * np.dot(X.T, error).reshape(1, -1) / X.shape[0],
-                          " Weights before change", self.W.reshape(1, -1))
-                    self.W = self.W - self.alpha * np.dot(X.T, error) / X.shape[0]
-                    print("Weights after ", self.W.reshape(1, -1), "\n")
+                    error = self.dloss(y,A)
+                    # print("gradient ", self.alpha * np.dot(X.T, error).reshape(1, -1) / X.shape[0],
+                    #       " Weights before change", self.W.reshape(1, -1))
+                    self.W = self.W +  np.dot(X.T, self.alpha * error/ X.shape[0])
+
+                    # print("Weights after ", self.W.reshape(1, -1), "\n")
             # single perceptron using batch
             else:
                 Z = np.dot(X, self.W)
                 A = self.threshold(Z)
-                error = self.dloss(A, y)
+                error = self.dloss(y, A)
                 # print("error and weigts",error.sum(), self.W.reshape(1,-1))
-                print("gradient ", self.alpha * np.dot(X.T, error).reshape(1, -1) / X.shape[0],
-                      " Weights before change", self.W.reshape(1, -1))
-                self.W = self.W - (self.alpha * np.dot(X.T, error)) / X.shape[0] - np.abs(self.W.sum()) * self.alpha / \
+                # print("gradient ", self.alpha * np.dot(X.T, error).reshape(1, -1) / X.shape[0],
+                #       " Weights before change", self.W.reshape(1, -1))
+                self.W = self.W + (self.alpha * np.dot(X.T, error)) / X.shape[0] - np.abs(self.W.sum()) * self.alpha / \
                          X.shape[0]
-                print("Weights after ", self.W.reshape(1, -1), "\n")
+                # print("Weights after ", self.W.reshape(1, -1), "\n")
 
             # check for stopping criteria
             Z = np.dot(X, self.W)
             A = self.threshold(Z)
-            error = self.dloss(A, y)
+            error = self.dloss(y, A)
+
             if self.threshhold == 0:
                 if (self.differnce(A, y) > 0.97):
                     print("number of iterations : ", i)
                     break
             else:
-                if (self.differnce(A, y) < 0.01):
+                if (self.differnce(A, y) < stopValue and i > 50):
                     print("number of iterations MSE: ", i)
                     break
 
