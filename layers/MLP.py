@@ -10,7 +10,27 @@ np.set_printoptions(threshold=sys.maxsize)
 pd.set_option('display.max_columns', None)
 pd.set_option('display.max_rows', None)
 
+# global to be able to call it any time
+def splitOutputToNeural( y):
+    unique = np.unique(y)
+    split = []
+    y = np.array(y)
+    for i in range(y.shape[0]):
+        tmp = np.zeros(unique.shape)
+        tmp[y[i]] = 1
+        split.append(tmp)
+    # for i in range(y.shape[0]):
+    #     print(y[i] , split[i])
+    return split
 
+def dataframesplit(df):
+    train = np.arange(0,30)
+    train = np.append(train,np.arange(50,80))
+    train = np.append(train,np.arange(100, 130))
+    test = np.arange(30.50)
+    test = np.append(test, np.arange(80, 100))
+    test = np.append(test, np.arange(130, 150))
+    return  df.iloc[train],df.iloc[test]
 class NN:
     def __init__(self, learning_rate=0.001, max_iter=1000, bias=0, threshold="Sigmoid"):
         self.max_iter = max_iter
@@ -42,10 +62,13 @@ class NN:
 
     # initialize the Weights, the weights are in list, each element in it is the weight between the layers, ex: W[0] is 2d array contain the weights between the input and first layer
     def layers(self, inputSize, layerSizes, numOfOutput):
-        self.W.append(np.random.rand(inputSize + self.bias, layerSizes[0]))
-        for i in range(len(layerSizes) - 1):
-            self.W.append(np.random.rand(layerSizes[i] + self.bias, layerSizes[i + 1]))
-        self.W.append(np.random.rand(layerSizes[-1] + self.bias, numOfOutput))
+        if len(layerSizes) != 0:
+            self.W.append(np.random.rand(inputSize + self.bias, layerSizes[0])-0.5)
+            for i in range(len(layerSizes) - 1):
+                self.W.append(np.random.rand(layerSizes[i] + self.bias, layerSizes[i + 1])-0.5)
+            self.W.append(np.random.rand(layerSizes[-1] + self.bias, numOfOutput)-0.5)
+        else:
+            self.W.append(np.random.rand(inputSize + self.bias,numOfOutput)-0.5)
 
     # the input is list of input + output value of every layer
     def forward(self, X):
@@ -67,11 +90,11 @@ class NN:
 
         self.input = input
         self.net = net
+        if self.bias == 1:
+            self.input[0] = self.input[0][:, 1:]  # to remove the 1 col in the dataset for bias
         return input[-1]
 
     def backward(self, X, y):
-        if self.bias == 1:
-            self.input[0] = self.input[0][:, 1:]  # to remove the 1 for bias
         dcost = (self.input[len(self.input) - 1] - y) * 2
         for i in range(len(self.W)):
             if i == 0:  # output layer derivative
@@ -89,33 +112,37 @@ class NN:
                 self.W[-(i + 1)][1:] -= dw * self.learning_rate / X.shape[0]
             else:
                 self.W[-(i + 1)] -= dw * self.learning_rate / X.shape[0]
-            # print( i,self.W[-(i+1)].mean())
         return
 
     def train(self, X, y, ):
-        y = np.array(self.splitOutputToNeural(y))
+        y = np.array(splitOutputToNeural(y))
         plot1 =[]
         plot2 = []
         plot3 = []
         plotting = []
         score = []
+        # t = self.forward(X)
+        # print((t - self.forward(X+(10**-4)))/(10**-4))
+        # return
         for i in range(self.max_iter):
             self.forward(X)
             self.backward(X, y)
-            score.append(1-self.test(X, y))
-            print("score:",score[-1])
-            # print(np.abs(self.forward(X) - y).sum())
+            # print("score:",score[-1])
+            print(np.abs(self.forward(X) - y).sum())
             plotting.append(np.abs(self.forward(X) - y).sum()/150)
             t1,t2,t3 = self.graph(X,y)
             plot1.append(t1)
             plot2.append(t2)
             plot3.append(t3)
+
+
         plt.plot(np.arange(0, len(plotting)), plotting,c='black')
         plt.plot(np.arange(0, len(plot1)), plot1,c='yellow')
         plt.plot(np.arange(0, len(plot2)), plot2,c='green')
         plt.plot(np.arange(0, len(plot3)), plot3,c='blue')
         plt.plot(np.arange(0, len(score)), score,c='red')
         plt.show()
+
         print(self.W)
 
     def predict(self, X):
@@ -131,24 +158,15 @@ class NN:
         return np.array(y)
 
     def test(self, X, y):
+        y = np.array(splitOutputToNeural(y))
         err = 0
         y_hat = self.predict(X)
+        for i in range(y_hat.shape[0]):
+            print(y_hat[i],y[i])
         for i in range(y.shape[0]):
             if (np.abs(y_hat[i]-y[i])).sum() != 0:
                 err+=1
         return err/y.shape[0]
-
-    def splitOutputToNeural(self, y):
-        unique = np.unique(y)
-        split = []
-        y = np.array(y)
-        for i in range(y.shape[0]):
-            tmp = np.zeros(unique.shape)
-            tmp[y[i]] = 1
-            split.append(tmp)
-        # for i in range(y.shape[0]):
-        #     print(y[i] , split[i])
-        return split
 
     def graph(self, X, y):
         class1 = 0
@@ -174,16 +192,23 @@ df['gender'] = df['gender'].fillna('male')
 le = LabelEncoder()
 df["gender"] = df.apply(le.fit_transform)["gender"]
 df["species"] = df.apply(le.fit_transform)["species"]
+train , test = dataframesplit(df)
 # output values
-y = df["species"]
+y_train = train["species"]
+y_test = test["species"]
 # normalize the input X
-x = df.drop(["species"], axis=1).values  # returns a numpy array
-min_max_scaler = preprocessing.MinMaxScaler()
-x_scaled = min_max_scaler.fit_transform(x)
-df_new = pd.DataFrame(x_scaled)
-X = df_new
+X_train = train.drop(["species"], axis=1).values
+X_test = test.drop(["species"], axis=1).values
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1)
-model = NN(learning_rate=0.01, max_iter=1000, bias=1, threshold="Tanh")
-model.layers(inputSize=X_train.shape[1], layerSizes=[3, 4], numOfOutput=3)
-model.train(X, y)
+
+min_max_scaler = preprocessing.MinMaxScaler()
+X_train = min_max_scaler.fit_transform(X_train)
+X_test = min_max_scaler.fit_transform(X_test)
+
+print(X_train,y_train)
+print(X_test,y_test)
+
+# model = NN(learning_rate=0.1, max_iter=10000, bias=1, threshold="Sigmoid")
+# model.layers(inputSize=X_train.shape[1], layerSizes=[1,5], numOfOutput=3)
+# model.train(X_train,y_train)
+# print(1-model.test(X_test,y_test))
