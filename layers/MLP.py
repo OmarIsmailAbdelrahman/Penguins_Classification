@@ -102,7 +102,7 @@ class NN:
             input.append(np.hstack((np.ones([X.shape[0], 1]), X)))  # NN input + bias
         else:
             input.append(X) #NN input
-        net.append(np.dot(input[0], self.W[0]))  # the net value for every neural in the first layer
+        net.append(input[0] @ self.W[0])  # the net value for every neural in the first layer
         input.append(self.fThreshold(net[0]))  # the output of threshold in the first layer
 
         # forward the rest of the network
@@ -113,7 +113,7 @@ class NN:
             else:
                 tmp = input[len(input) - 1]
             # storing the net and the threshold of the net for the backprop
-            net.append(np.dot(tmp, self.W[i + 1]))
+            net.append(tmp @ self.W[i + 1])
 
             input.append(self.fThreshold(net[len(net) - 1]))
         # using global variable to store net and output of each layer
@@ -130,15 +130,15 @@ class NN:
 
             if i == 0:  # output layer derivative is unique because it uses the cost
                 db = self.dthreshold(self.net[-1]) * dcost  # dc/db = dc/da * da/dz
-                dw = np.dot(self.input[-2].T, db)  # dc/dw = dc/da * da/dz * dz/dw = dc/db * X
+                dw = self.input[-2].T @ db  # dc/dw = dc/da * da/dz * dz/dw = dc/db * X
             else:
                 # The derivation is at the Top
                 if self.bias == 1:
-                    db = self.dthreshold(self.net[-(1 + i)] * np.dot(db, self.W[-(i)][1:].T))
-                    dw = np.dot(self.input[-(2 + i)].T, db)
+                    db = self.dthreshold(self.net[-(1 + i)] * (db @ self.W[-(i)][1:].T))
+                    dw = self.input[-(2 + i)].T @ db
                 else:
-                    db = self.dthreshold(self.net[-(1 + i)] * np.dot(db, self.W[-(i)].T))
-                    dw = np.dot(self.input[-(2 + i)].T, db)
+                    db = self.dthreshold(self.net[-(1 + i)] * (db @ self.W[-(i)].T))
+                    dw = self.input[-(2 + i)].T @ db
             if self.bias == 1: # if there is a bias update it too, else update the W
                 self.W[-(i + 1)][0] -= (np.sum(db,axis=0) * self.learning_rate / X.shape[0])
                 self.W[-(i + 1)][1:] -= dw * self.learning_rate / X.shape[0]
@@ -226,7 +226,6 @@ y_train = train["species"]
 y_test = test["species"]
 X_train = train.drop(["species"], axis=1).values
 X_test = test.drop(["species"], axis=1).values
-
 # normalize the input X
 min_max_scaler = preprocessing.MinMaxScaler()
 X_train = min_max_scaler.fit_transform(X_train)
